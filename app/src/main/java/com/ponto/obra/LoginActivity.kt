@@ -13,12 +13,17 @@ class LoginActivity : MainActivity() {
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var edtCpf: TextInputEditText
     private lateinit var edtSenha: TextInputEditText
+    private lateinit var config: ConfigSegura
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         try {
+            config = ConfigSegura(this)
+        val nomeEmpresa = config.pegarNomeEmpresa()
+        findViewById<TextView>(R.id.txtEmpresa).text = nomeEmpresa
             edtCpf = findViewById(R.id.edtCpf)
             edtSenha = findViewById(R.id.edtSenha)
             val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)

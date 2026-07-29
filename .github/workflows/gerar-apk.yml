@@ -16,14 +16,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Configurar Gradle de uma vez só
+      - name: Gerar arquivos do Gradle oficiais
         run: |
           rm -f gradlew
           rm -rf gradle
-          mkdir -p gradle/wrapper
           wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip
           unzip -q gradle-8.5-bin.zip
-          gradle-8.5/bin/gradle wrapper
+          ./gradle-8.5/bin/gradle wrapper
           chmod +x gradlew
           rm -rf gradle-8.5 gradle-8.5-bin.zip
 

@@ -2,7 +2,7 @@ package com.ponto.obra
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -10,14 +10,12 @@ import java.util.Locale
 
 class RegistroPonto(context: Context) {
 
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.Purpose.ENCRYPT_DECRYPT)
-        .build()
+    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
     private val arquivoSeguro = EncryptedSharedPreferences.create(
-        context,
         "registros_offline",
-        masterKey,
+        masterKeyAlias,
+        context,
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )

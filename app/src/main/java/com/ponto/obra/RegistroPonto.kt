@@ -31,7 +31,8 @@ class RegistroPonto(context: Context) {
             put("latitude", latitude)
             put("longitude", longitude)
             put("obra", obra)
-            put sincronizado", false)
+            put("sincronizado", false)
+
         }
 
         arquivoSeguro.edit()

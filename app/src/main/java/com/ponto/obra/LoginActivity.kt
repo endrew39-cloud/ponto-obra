@@ -18,44 +18,50 @@ class LoginActivity : MainActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        edtCpf = findViewById(R.id.edtCpf)
-        edtSenha = findViewById(R.id.edtSenha)
-        val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
-        val btnBiometria = findViewById<MaterialButton>(R.id.btnBiometria)
+        try {
+            edtCpf = findViewById(R.id.edtCpf)
+            edtSenha = findViewById(R.id.edtSenha)
+            val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
+            val btnBiometria = findViewById<MaterialButton>(R.id.btnBiometria)
 
-        executor = ContextCompat.getMainExecutor(this)
-        biometricPrompt = BiometricPrompt(this, executor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
-                    Toast.makeText(this@LoginActivity, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
+            executor = ContextCompat.getMainExecutor(this)
+            biometricPrompt = BiometricPrompt(this, executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+                        Toast.makeText(this@LoginActivity, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        super.onAuthenticationFailed()
+                        Toast.makeText(this@LoginActivity, "Falha na autenticação", Toast.LENGTH_SHORT).show()
+                    }
+                })
+
+            btnLogin.setOnClickListener {
+                val cpf = edtCpf.text.toString().trim()
+                val senha = edtSenha.text.toString().trim()
+
+                if (cpf == "12345678900" && senha == "123456") {
+                    Toast.makeText(this, "Login efetuado!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@LoginActivity, getString(R.string.erro_login), Toast.LENGTH_SHORT).show()
                 }
-
-                override fun onAuthenticationFailed() {
-                    super.onAuthenticationFailed()
-                    Toast.makeText(this@LoginActivity, "Falha na autenticação", Toast.LENGTH_SHORT).show()
-                }
-            })
-
-        btnLogin.setOnClickListener {
-            val cpf = edtCpf.text.toString()
-            val senha = edtSenha.text.toString()
-
-            if (cpf == "12345678900" && senha == "123456") {
-                Toast.makeText(this, "Login efetuado!", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, getString(R.string.erro_login), Toast.LENGTH_SHORT).show()
             }
-        }
 
-        btnBiometria.setOnClickListener {
-            val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle("Verificação de identidade")
-                .setSubtitle("Use sua digital ou rosto para acessar")
-                .setNegativeButtonText("Cancelar")
-                .build()
+            btnBiometria.setOnClickListener {
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle("Verificação de identidade")
+                    .setSubtitle("Use sua digital ou rosto para acessar")
+                    .setNegativeButtonText("Cancelar")
+                    .build()
 
-            biometricPrompt.authenticate(promptInfo)
+                biometricPrompt.authenticate(promptInfo)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Erro ao carregar tela", Toast.LENGTH_SHORT).show()
+            finish()
         }
     }
 }

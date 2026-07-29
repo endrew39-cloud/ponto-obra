@@ -1,0 +1,29 @@
+name: Gerar APK Ponto Obra
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pegar código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Dar permissão ao Gradle
+        run: chmod +x gradlew
+
+      - name: Compilar e gerar APK
+        run: ./gradlew assembleDebug
+
+      - name: Salvar APK pronto
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK-Pronto
+          path: app/build/outputs/apk/debug/*.apk

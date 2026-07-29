@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ponto Obra</string>
+    <string name="login">Acessar</string>
+    <string name="cpf">CPF</string>
+    <string name="senha">Senha</string>
+    <string name="erro_login">CPF ou senha incorretos</string>
+    <string name="ponto_registrado">Ponto registrado com sucesso!</string>
+    <string name="fora_area">Você não está dentro da área da obra</string>
+    <string name="sem_internet">Sem conexão: registro salvo de forma segura</string>
+    <string name="biometria">Entrar com biometria ou facial</string>
+</resources>

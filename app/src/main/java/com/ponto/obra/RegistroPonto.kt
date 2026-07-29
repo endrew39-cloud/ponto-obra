@@ -23,23 +23,27 @@ class RegistroPonto(context: Context) {
     )
 
     fun salvarOffline(tipo: String, latitude: Double, longitude: Double, obra: String): Boolean {
-        val dataHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("pt", "BR")).format(Date())
-        
-        val registro = JSONObject().apply {
-            put("tipo", tipo)
-            put("dataHora", dataHora)
-            put("latitude", latitude)
-            put("longitude", longitude)
-            put("obra", obra)
-            put("sincronizado", false)
+        return try {
+            val dataHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("pt", "BR")).format(Date())
+            
+            val registro = JSONObject().apply {
+                put("tipo", tipo)
+                put("dataHora", dataHora)
+                put("latitude", latitude)
+                put("longitude", longitude)
+                put("obra", obra)
+                put("sincronizado", false)
+            }
 
+            arquivoSeguro.edit()
+                .putString("ponto_${System.currentTimeMillis()}", registro.toString())
+                .apply()
+            
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
-
-        arquivoSeguro.edit()
-            .putString("ponto_${System.currentTimeMillis()}", registro.toString())
-            .apply()
-        
-        return true
     }
 
     fun pegarRegistrosPendentes(): List<JSONObject> {

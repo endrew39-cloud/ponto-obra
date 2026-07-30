@@ -1,82 +1,77 @@
 package com.ponto.obra
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
-import org.json.JSONArray
-import org.json.JSONObject
+import androidx.security.crypto.MasterKey
 
-class ConfigSegura(context: Context) {
-    private val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-    private val config = EncryptedSharedPreferences.create(
-        "config_empresa",
-        masterKey,
-        context,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+class ConfigSegura(private val contexto: Context) {
 
-    private val SENHA_MESTRA_PADRAO = "dev_ponto_2026"
+    private val SENHA_MESTRA_PADRAO = "pontoobra2026"
+    private val preferencias: SharedPreferences
+
+    init {
+        val chaveMestra = MasterKey.Builder(contexto)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+
+        preferencias = EncryptedSharedPreferences.create(
+            contexto,
+            "configuracoes_seguras",
+            chaveMestra,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
 
     fun validarAcessoDev(senhaDigitada: String): Boolean {
-        val senhaSalva = config.getString("senha_mestra", SENHA_MESTRA_PADRAO)
-        return senhaDigitada == senhaSalva
+        val senhaSalva = preferencias.getString("senha_mestra", SENHA_MESTRA_PADRAO)
+        return senhaDigitada.trim() == senhaSalva
     }
 
     fun salvarNomeEmpresa(nome: String) {
-        config.edit().putString("nome_empresa", nome).apply()
+        preferencias.edit().putString("nome_empresa", nome).apply()
     }
 
     fun pegarNomeEmpresa(): String {
-        return config.getString("nome_empresa", "Ponto Obra") ?: "Ponto Obra"
+        return preferencias.getString("nome_empresa", "Minha Obra") ?: "Minha Obra"
     }
 
     fun salvarServidor(endereco: String) {
-        config.edit().putString("endereco_servidor", endereco).apply()
+        preferencias.edit().putString("endereco_servidor", endereco).apply()
     }
 
     fun pegarServidor(): String {
-        return config.getString("endereco_servidor", "http://192.168.0.100:8080") ?: "http://192.168.0.100:8080"
+        return preferencias.getString("endereco_servidor", "") ?: ""
     }
 
-    fun salvarObra(obra: ObraCadastrada) {
-        val lista = pegarTodasObras()
+    fun salvarObra(obra: Obra) {
+        val lista = pegarTodasObras().toMutableList()
         lista.add(obra)
-
-        val json = JSONArray()
-        lista.forEach {
-            val obj = JSONObject()
-            obj.put("nome", it.nome)
-            obj.put("lat", it.latitude)
-            obj.put("lon", it.longitude)
-            obj.put("raio", it.raioPermitidoMetros)
-            json.put(obj)
-        }
-        config.edit().putString("obras_cadastradas", json.toString()).apply()
+        val nomes = lista.joinToString(" | ") { it.nome }
+        val raios = lista.joinToString(" | ") { it.raioPermitidoMetros.toString() }
+        preferencias.edit()
+            .putString("lista_obras_nomes", nomes)
+            .putString("lista_obras_raios", raios)
+            .apply()
     }
 
-    fun pegarTodasObras(): MutableList<ObraCadastrada> {
-        val lista = mutableListOf<ObraCadastrada>()
-        val texto = config.getString("obras_cadastradas", "[]") ?: "[]"
-        try {
-            val json = JSONArray(texto)
-            for (i in 0 until json.length()) {
-                val obj = json.getJSONObject(i)
-                lista.add(
-                    ObraCadastrada(
-                        nome = obj.getString("nome"),
-                        latitude = obj.getDouble("lat"),
-                        longitude = obj.getDouble("lon"),
-                        raioPermitidoMetros = obj.getDouble("raio")
-                    )
-                )
-            }
-        } catch (_: Exception) {}
-        return lista
+    fun pegarTodasObras(): List<Obra> {
+        val nomes = preferencias.getString("lista_obras_nomes", "") ?: ""
+        val raios = preferencias.getString("lista_obras_raios", "") ?: ""
+
+        if (nomes.isEmpty() || raios.isEmpty()) return emptyList()
+
+        val listaNomes = nomes.split(" | ").filter { it.isNotEmpty() }
+        val listaRaios = raios.split(" | ").mapNotNull { it.toIntOrNull() }
+
+        return listaNomes.zip(listaRaios) { n, r -> Obra(n, r) }
     }
 
-    fun pegarObraAtual(): ObraCadastrada? {
-        val nome = pegarNomeEmpresa()
-        return pegarTodasObras().find { it.nome == nome }
+    fun pegarObraAtual(): Obra? {
+        val lista = pegarTodasObras()
+        return lista.firstOrNull()
     }
 }

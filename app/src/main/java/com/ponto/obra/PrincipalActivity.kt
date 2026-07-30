@@ -1,4 +1,4 @@
-package com.seuapp.pontoobra
+package com.ponto.obra
 
 import android.Manifest
 import android.content.Intent
@@ -142,7 +142,7 @@ class PrincipalActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             if(sucesso) {
                                 Toast.makeText(this@PrincipalActivity, 
-                                    "✅ $tipo registrado com sucesso!\nHorário oficial de Brasília", 
+                                    "✅ $tipo registrado com sucesso!", 
                                     Toast.LENGTH_LONG).show()
                             } else {
                                 Toast.makeText(this@PrincipalActivity, 

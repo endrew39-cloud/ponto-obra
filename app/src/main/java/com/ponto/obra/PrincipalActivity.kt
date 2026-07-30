@@ -67,7 +67,7 @@ class PrincipalActivity : AppCompatActivity() {
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras = config.carregarListaObras().map { it.first }
-            val adaptador = ArrayAdapter(
+            val adaptador = ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras
@@ -111,6 +111,11 @@ class PrincipalActivity : AppCompatActivity() {
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@PrincipalActivity, 
+                            "❌ Permissão de localização negada!", 
+                            Toast.LENGTH_LONG).show()
+                    }
                     return@launch
                 }
 

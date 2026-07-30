@@ -266,7 +266,8 @@ class PrincipalActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             val local = localizacao.pegarAtual()
             val nomeEmpresa = config.pegarNomeEmpresa()
-            val obraAtual = config.pegarObraAtual()
+            val listaObras = config.pegarTodasObras()
+            val obraAtual = listaObras.firstOrNull()
             val cpfUsuario = "12345678900"
 
             val podeRegistrar = obraAtual?.let {

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nome da Obra"
+        android:padding="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txtNomeObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Raio de verificação (metros)"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/txtRaioObra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <fragment
+        android:id="@+id/mapaObra"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSalvarObraMapa"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="💾 Salvar Obra"
+        android:backgroundTint="#2E7D32"/>
+
+</LinearLayout>

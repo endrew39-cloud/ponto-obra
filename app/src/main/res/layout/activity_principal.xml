@@ -3,59 +3,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:padding="16dp">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Bem-vindo ao Ponto de Obra"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="#2E7D32"
-        android:gravity="center"
-        android:layout_marginBottom="24dp"/>
-
+    android:padding="24dp">
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:hint="Selecione a Obra">
-
+        android:hint="Escolha a Obra">
         <com.google.android.material.textfield.TextInputAutoCompleteTextView
             android:id="@+id/listaObras"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textNoSuggestions"/>
+            android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnEntrada"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="✅ Registrar Entrada"
-        android:textSize="16sp"
-        android:backgroundTint="#2E7D32"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="12dp"/>
-
+        android:backgroundTint="#2E7D32"/>
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaida"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="⏹️ Registrar Saída"
-        android:textSize="16sp"
-        android:backgroundTint="#D32F2F"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="12dp"/>
-
+        android:backgroundTint="#C62828"/>
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCadastrarObra"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:text="📍 Cadastrar Nova Obra"
-        android:textSize="16sp"
-        android:backgroundTint="#1976D2"
-        android:textColor="#FFFFFF"/>
-
+        android:backgroundTint="#1565C0"/>
 </LinearLayout>

@@ -23,16 +23,13 @@ class ConfigSegura(val contexto: Context) {
         return try {
             val endereco = pegarValor("link_servidor", "").trim().removeSuffix("/")
             if(endereco.isEmpty()) return false
-
             val url = URL("$endereco/lista-obras")
             val conexao = url.openConnection() as HttpURLConnection
             conexao.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
             conexao.connectTimeout = 10000
             conexao.readTimeout = 10000
-
             val resposta = conexao.inputStream.reader().readText()
             val listaJson = JSONArray(resposta)
-
             salvarValor("qtd_obras", listaJson.length().toString())
             for(i in 0 until listaJson.length()){
                 val obj = listaJson.getJSONObject(i)
@@ -42,9 +39,7 @@ class ConfigSegura(val contexto: Context) {
                 salvarValor("obra_${i}_raio", obj.getString("raio"))
             }
             true
-        } catch (e: Exception) {
-            false
-        }
+        } catch (e: Exception) { false }
     }
 
     fun carregarListaObras(): List<Obra> {

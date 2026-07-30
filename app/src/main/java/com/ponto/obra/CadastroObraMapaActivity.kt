@@ -72,13 +72,11 @@ class CadastroObraMapaActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val qtdAtual = config.pegarValor("qtd_obras", "0").toInt()
-        val editor = config.pasta.edit()
-        editor.putString("obra_${qtdAtual}_nome", nome)
-        editor.putString("obra_${qtdAtual}_lat", localEscolhido!!.latitude.toString())
-        editor.putString("obra_${qtdAtual}_lon", localEscolhido!!.longitude.toString())
-        editor.putString("obra_${qtdAtual}_raio", raio)
-        editor.putString("qtd_obras", (qtdAtual + 1).toString())
-        editor.apply()
+        config.salvarValor("obra_${qtdAtual}_nome", nome)
+        config.salvarValor("obra_${qtdAtual}_lat", localEscolhido!!.latitude.toString())
+        config.salvarValor("obra_${qtdAtual}_lon", localEscolhido!!.longitude.toString())
+        config.salvarValor("obra_${qtdAtual}_raio", raio)
+        config.salvarValor("qtd_obras", (qtdAtual + 1).toString())
 
         Toast.makeText(this, "✅ Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
         finish()

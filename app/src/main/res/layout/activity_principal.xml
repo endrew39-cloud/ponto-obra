@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp">
+
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,6 +14,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnEntrada"
         android:layout_width="match_parent"
@@ -20,6 +22,7 @@
         android:layout_marginTop="16dp"
         android:text="✅ Registrar Entrada"
         android:backgroundTint="#2E7D32"/>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSaida"
         android:layout_width="match_parent"
@@ -27,6 +30,7 @@
         android:layout_marginTop="8dp"
         android:text="⏹️ Registrar Saída"
         android:backgroundTint="#C62828"/>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCadastrarObra"
         android:layout_width="match_parent"
@@ -34,4 +38,5 @@
         android:layout_marginTop="16dp"
         android:text="📍 Cadastrar Nova Obra"
         android:backgroundTint="#1565C0"/>
+
 </LinearLayout>

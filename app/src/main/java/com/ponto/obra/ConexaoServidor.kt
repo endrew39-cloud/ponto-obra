@@ -5,7 +5,14 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
+import org.json.JSONObject
 
 class ConexaoServidor(context: Context) {
     private val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
@@ -16,9 +23,8 @@ class ConexaoServidor(context: Context) {
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
-
-    // Endereço do seu servidor temporário, altere conforme precisar
-    var enderecoServidor: String = "http://192.168.0.100:8080"
+    private val configGeral = ConfigSegura(context)
+    private val clienteHttp = OkHttpClient()
 
     fun temInternet(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -30,14 +36,34 @@ class ConexaoServidor(context: Context) {
 
     suspend fun enviarRegistro(registro: RegistroPonto): Boolean {
         return try {
-            if (!temInternet(com.ponto.obra.Aplicativo.getContexto())) {
+            val contexto = Aplicativo.getContexto()
+            if (!temInternet(contexto)) {
                 salvarOffline(registro)
                 return false
             }
 
-            // Aqui vai a lógica real de envio quando tiver servidor estruturado
-            // Simulação de sucesso para o teste
-            true
+            val endereco = configGeral.pegarServidor()
+            val jsonEnvio = JSONObject().apply {
+                put("cpf", registro.cpfFuncionario)
+                put("tipo", registro.tipo)
+                put("dataHora", registro.dataHora)
+                put("lat", registro.latitude)
+                put("lon", registro.longitude)
+                put("obra", registro.nomeObra)
+                put("hash", registro.hashSeguranca)
+            }.toString()
+
+            val requisicao = Request.Builder()
+                .url("$endereco/receber_ponto")
+                .addHeader("Content-Type", "application/json")
+                .post(jsonEnvio.toRequestBody("application/json".toMediaType()))
+                .build()
+
+            val resposta = withContext(Dispatchers.IO) {
+                clienteHttp.newCall(requisicao).execute()
+            }
+
+            resposta.isSuccessful
         } catch (e: Exception) {
             salvarOffline(registro)
             false
@@ -50,7 +76,7 @@ class ConexaoServidor(context: Context) {
 
         val json = JSONArray()
         lista.forEach {
-            val obj = org.json.JSONObject()
+            val obj = JSONObject()
             obj.put("cpf", it.cpfFuncionario)
             obj.put("tipo", it.tipo)
             obj.put("dataHora", it.dataHora)

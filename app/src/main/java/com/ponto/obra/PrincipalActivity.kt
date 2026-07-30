@@ -29,13 +29,12 @@ class PrincipalActivity : AppCompatActivity() {
 
         config = ConfigSegura(this)
         inicializarTela()
+        verificarPermissaoLocalizacao()
 
         CoroutineScope(Dispatchers.IO).launch {
             config.atualizarListaObrasDoServidor()
             carregarObrasNaTela()
         }
-
-        verificarPermissaoLocalizacao()
     }
 
     private fun inicializarTela() {
@@ -57,11 +56,11 @@ class PrincipalActivity : AppCompatActivity() {
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras = config.carregarListaObras().map { it.nome }
-            val adaptador = object : android.widget.ArrayAdapter<String>(
+            val adaptador = android.widget.ArrayAdapter(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras
-            ) {}
+            )
             listaObras.setAdapter(adaptador)
         }
     }
@@ -86,7 +85,6 @@ class PrincipalActivity : AppCompatActivity() {
             Toast.makeText(this, "Escolha uma obra primeiro!", Toast.LENGTH_LONG).show()
             return
         }
-
         Toast.makeText(this, "✅ $tipo registrado para $obraEscolhida!", Toast.LENGTH_LONG).show()
     }
 
@@ -98,3 +96,4 @@ class PrincipalActivity : AppCompatActivity() {
         }
     }
 }
+

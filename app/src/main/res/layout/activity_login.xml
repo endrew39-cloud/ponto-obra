@@ -3,64 +3,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    android:padding="32dp"
+    android:padding="24dp"
     android:gravity="center">
-
-    <TextView
-        android:id="@+id/txtEmpresa"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Ponto Obra"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#2E7D32"
-        android:layout_marginBottom="40dp"/>
-
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="CPF"
-        android:layout_marginBottom="16dp">
-
+        android:hint="CPF">
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtCpf"
+            android:id="@+id/txtCpf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
             android:maxLength="11"/>
     </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEntrar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Senha"
-        android:layout_marginBottom="24dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edtSenha"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Entrar"
-        android:textSize="16sp"
-        android:backgroundTint="#2E7D32"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBiometria"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Acessar com Digital/Rosto"
-        android:textSize="16sp"
-        android:backgroundTint="#1976D2"
-        android:textColor="@android:color/white"/>
-
+        android:layout_marginTop="16dp"
+        android:text="Acessar / Biometria"/>
 </LinearLayout>

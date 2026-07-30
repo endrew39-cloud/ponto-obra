@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissões necessárias -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -13,7 +12,6 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PontoObra"
         tools:targetApi="31">
@@ -27,17 +25,9 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".PrincipalActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".CadastroActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".CadastroObraMapaActivity"
-            android:exported="false" />
+        <activity android:name=".PrincipalActivity" android:exported="false" />
+        <activity android:name=".CadastroActivity" android:exported="false" />
+        <activity android:name=".CadastroObraMapaActivity" android:exported="false" />
 
     </application>
 

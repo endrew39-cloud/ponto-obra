@@ -29,13 +29,13 @@
         android:id="@+id/btnBaterPonto"
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:text="Bater Ponto"
+        android:text=" Bater Ponto"
         android:textSize="18sp"
+        android:drawableStart="@android:drawable/ic_menu_myplaces"
+        android:drawablePadding="8dp"
         android:backgroundTint="#2E7D32"
         android:textColor="@android:color/white"
-        android:layout_marginBottom="16dp"
-        android:icon="@android:drawable/ic_menu_myplaces"
-        android:iconGravity="textStart"/>
+        android:layout_marginBottom="16dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnMeusRegistros"
@@ -47,6 +47,11 @@
         android:textColor="@android:color/white"
         android:layout_marginBottom="16dp"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnConfigDev"
         android:layout_width="match_parent"
@@ -54,7 +59,6 @@
         android:text="Configurações (Desenvolvedor)"
         android:textSize="14sp"
         android:backgroundTint="#424242"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="auto"/>
+        android:textColor="@android:color/white"/>
 
 </LinearLayout>

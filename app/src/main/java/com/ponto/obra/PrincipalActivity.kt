@@ -113,13 +113,17 @@ class PrincipalActivity : AppCompatActivity() {
         )
 
         AlertDialog.Builder(this)
-            .setTitle("Configurações")
+            .setTitle("Configurações Avançadas")
             .setItems(opcoes) { _, indice ->
-                when(indice) {
-                    0 -> alterarNomeEmpresa()
-                    1 -> alterarServidor()
-                    2 -> cadastrarObra()
-                    3 -> mostrarObras()
+                try {
+                    when(indice) {
+                        0 -> alterarNomeEmpresa()
+                        1 -> alterarServidor()
+                        2 -> cadastrarObra()
+                        3 -> mostrarObras()
+                    }
+                } catch (erro: Exception) {
+                    Toast.makeText(this, "Erro ao abrir opção: ${erro.message}", Toast.LENGTH_LONG).show()
                 }
             }
             .show()
@@ -127,50 +131,103 @@ class PrincipalActivity : AppCompatActivity() {
 
     private fun alterarNomeEmpresa() {
         val entrada = TextInputEditText(this)
+        entrada.hint = "Nome da empresa ou obra atual"
         entrada.setText(config.pegarNomeEmpresa())
 
         AlertDialog.Builder(this)
-            .setTitle("Nome da Empresa/Obra")
+            .setTitle("Alterar Nome")
+            .setMessage("Esse nome aparece no registro do ponto")
             .setView(entrada)
             .setPositiveButton("Salvar") { _, _ ->
                 val nome = entrada.text.toString().trim()
                 if (nome.isNotEmpty()) {
                     config.salvarNomeEmpresa(nome)
-                    Toast.makeText(this, "Nome atualizado!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Nome atualizado: $nome", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Digite um nome válido!", Toast.LENGTH_SHORT).show()
                 }
             }
+            .setNegativeButton("Cancelar", null)
             .show()
     }
 
     private fun alterarServidor() {
         val entrada = TextInputEditText(this)
+        entrada.hint = "Ex: https://seu-servidor.ngrok.io"
         entrada.setText(config.pegarServidor())
 
         AlertDialog.Builder(this)
             .setTitle("Endereço do Servidor")
-            .setMessage("Ex: http://192.168.0.100:8080")
+            .setMessage("Mantenha o ngrok rodando no computador!")
             .setView(entrada)
             .setPositiveButton("Salvar") { _, _ ->
-                val end = entrada.text.toString().trim()
-                if (end.isNotEmpty()) {
-                    config.salvarServidor(end)
-                    Toast.makeText(this, "Servidor atualizado!", Toast.LENGTH_SHORT).show()
+                val endereco = entrada.text.toString().trim()
+                if (endereco.isNotEmpty()) {
+                    config.salvarServidor(endereco)
+                    Toast.makeText(this, "Servidor configurado!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Digite o endereço correto!", Toast.LENGTH_SHORT).show()
                 }
             }
+            .setNegativeButton("Cancelar", null)
             .show()
     }
 
     private fun cadastrarObra() {
-        Toast.makeText(this, "Cadastro de obra: preencha os dados", Toast.LENGTH_SHORT).show()
+        val entradaNome = TextInputEditText(this)
+        entradaNome.hint = "Nome da Obra"
+
+        val entradaRaio = TextInputEditText(this)
+        entradaRaio.hint = "Raio permitido (metros)"
+        entradaRaio.setText("100")
+
+        val formulario = android.widget.LinearLayout(this)
+        formulario.orientation = android.widget.LinearLayout.VERTICAL
+        formulario.setPadding(48, 24, 48, 24)
+        formulario.addView(entradaNome)
+        formulario.addView(entradaRaio)
+
+        AlertDialog.Builder(this)
+            .setTitle("Cadastrar Nova Obra")
+            .setView(formulario)
+            .setPositiveButton("Salvar") { _, _ ->
+                val nome = entradaNome.text.toString().trim()
+                val raioTexto = entradaRaio.text.toString().trim()
+
+                if (nome.isEmpty() || raioTexto.isEmpty()) {
+                    Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_LONG).show()
+                    return@setPositiveButton
+                }
+
+                val raio = raioTexto.toIntOrNull() ?: 100
+                val obra = Obra(nome, raio)
+                config.salvarObra(obra)
+                Toast.makeText(this, "Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun mostrarObras() {
-        val lista = config.pegarTodasObras().joinToString("\n") {
-            "${it.nome} - Raio: ${it.raioPermitidoMetros}m"
+        val lista = config.pegarTodasObras()
+        
+        if (lista.isEmpty()) {
+            AlertDialog.Builder(this)
+                .setTitle("Obras Cadastradas")
+                .setMessage("Nenhuma obra cadastrada ainda!\nCadastre uma primeiro para validar o ponto.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
         }
+
+        val texto = lista.mapIndexed { indice, obra ->
+            "${indice + 1}. ${obra.nome}\n   Raio permitido: ${obra.raioPermitidoMetros} metros"
+        }.joinToString("\n\n")
+
         AlertDialog.Builder(this)
             .setTitle("Obras Cadastradas")
-            .setMessage(lista.ifEmpty { "Nenhuma obra cadastrada ainda" })
+            .setMessage(texto)
+            .setPositiveButton("OK", null)
             .show()
     }
 

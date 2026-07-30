@@ -3,14 +3,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="#F5F5F5"
+    android:padding="24dp">
 
     <TextView
+        android:id="@+id/txtBemVindo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tela Principal"
+        android:text="Olá!"
         android:textSize="24sp"
-        android:padding="32dp"/>
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/txtDataHora"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data e Hora"
+        android:textSize="16sp"
+        android:textColor="#616161"
+        android:layout_marginBottom="32dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBaterPonto"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Bater Ponto"
+        android:textSize="18sp"
+        android:backgroundTint="#2E7D32"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp"
+        android:icon="@android:drawable/ic_menu_myplaces"
+        android:iconGravity="textStart"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnMeusRegistros"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Meus Registros"
+        android:textSize="16sp"
+        android:backgroundTint="#1976D2"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfigDev"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Configurações (Desenvolvedor)"
+        android:textSize="14sp"
+        android:backgroundTint="#424242"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="auto"/>
 
 </LinearLayout>
-

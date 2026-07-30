@@ -3,7 +3,6 @@ package com.ponto.obra
 import android.content.Context
 import android.content.SharedPreferences
 import org.json.JSONArray
-import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -18,14 +17,7 @@ class ConfigSegura(val contexto: Context) {
         return pasta.getString(chave, padrao) ?: padrao
     }
 
-    fun salvarFotoPerfil(cpf: String, fotoBase64: String) {
-        salvarValor("foto_$cpf", fotoBase64)
-    }
-
-    fun pegarFotoPerfil(cpf: String): String? {
-        val valor = pegarValor("foto_$cpf", "")
-        return if(valor.isEmpty()) null else valor
-    }
+    data class Obra(val nome: String, val lat: Double, val lon: Double, val raio: Int)
 
     suspend fun atualizarListaObrasDoServidor(): Boolean {
         return try {
@@ -41,40 +33,29 @@ class ConfigSegura(val contexto: Context) {
             val resposta = conexao.inputStream.reader().readText()
             val listaJson = JSONArray(resposta)
 
-            val editor = pasta.edit()
-            val qtdAntiga = pegarValor("qtd_obras", "0").toInt()
-            for(i in 0 until qtdAntiga) {
-                editor.remove("obra_${i}_nome")
-                editor.remove("obra_${i}_lat")
-                editor.remove("obra_${i}_lon")
-                editor.remove("obra_${i}_raio")
-            }
-
-            editor.putString("qtd_obras", listaJson.length().toString())
+            salvarValor("qtd_obras", listaJson.length().toString())
             for(i in 0 until listaJson.length()){
                 val obj = listaJson.getJSONObject(i)
-                editor.putString("obra_${i}_nome", obj.getString("nome"))
-                editor.putString("obra_${i}_lat", obj.getString("lat"))
-                editor.putString("obra_${i}_lon", obj.getString("lon"))
-                editor.putString("obra_${i}_raio", obj.getString("raio"))
+                salvarValor("obra_${i}_nome", obj.getString("nome"))
+                salvarValor("obra_${i}_lat", obj.getString("lat"))
+                salvarValor("obra_${i}_lon", obj.getString("lon"))
+                salvarValor("obra_${i}_raio", obj.getString("raio"))
             }
-            editor.apply()
             true
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
     }
 
-    fun carregarListaObras(): List<Triple<String, Double, Double, Int>> {
-        val lista = mutableListOf<Triple<String, Double, Double, Int>>()
+    fun carregarListaObras(): List<Obra> {
+        val lista = mutableListOf<Obra>()
         val qtd = pegarValor("qtd_obras", "0").toInt()
         for(i in 0 until qtd) {
             val nome = pegarValor("obra_${i}_nome")
             val lat = pegarValor("obra_${i}_lat", "0.0").toDouble()
             val lon = pegarValor("obra_${i}_lon", "0.0").toDouble()
             val raio = pegarValor("obra_${i}_raio", "0").toInt()
-            lista.add(Triple(nome, lat, lon, raio))
+            lista.add(Obra(nome, lat, lon, raio))
         }
         return lista
     }

@@ -1,65 +1,79 @@
-package com.ponto.obra
-
 import android.content.Context
-import android.widget.Toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class ConexaoServidor(private val contexto: Context) {
+class ConexaoServidor(val contexto: Context) {
+    private val config = ConfigSegura(contexto)
 
-    suspend fun enviarPonto(dadosPonto: JSONObject): Boolean {
+    // PEGA HORÁRIO OFICIAL SOMENTE DO SERVIDOR - NUNCA DO CELULAR
+    suspend fun pegarHorarioOficial(): Triple<String, String, String>? {
         return withContext(Dispatchers.IO) {
             try {
-                var enderecoBase = ConfigSegura(contexto).pegarServidor().trim()
-                if(enderecoBase.isEmpty()) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(contexto, "Endereço do servidor não configurado!", Toast.LENGTH_LONG).show()
-                    }
-                    return@withContext false
-                }
+                val endereco = config.pegarValor("link_servidor", "").trim().removeSuffix("/")
+                if(endereco.isEmpty()) return@withContext null
 
-                if(enderecoBase.endsWith("/")) {
-                    enderecoBase = enderecoBase.dropLast(1)
-                }
-
-                val urlCompleta = URL("$enderecoBase/receber_ponto")
-                val conexao = urlCompleta.openConnection() as HttpURLConnection
-
+                val url = URL("$endereco/pegar-horario")
+                val conexao = url.openConnection() as HttpURLConnection
                 conexao.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
-                conexao.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-                conexao.setRequestProperty("Accept", "application/json")
-                conexao.requestMethod = "POST"
-                conexao.doOutput = true
-                conexao.connectTimeout = 25000
-                conexao.readTimeout = 25000
+                conexao.connectTimeout = 8000
+                conexao.readTimeout = 8000
 
-                conexao.outputStream.use { saida ->
-                    saida.write(dadosPonto.toString().toByteArray(Charsets.UTF_8))
-                }
+                val resposta = conexao.inputStream.reader().readText()
+                val json = JSONObject(resposta)
 
-                val codigo = conexao.responseCode
-                conexao.disconnect()
-
-                return@withContext codigo in 200..299
-
-            } catch (erro: Exception) {
-                erro.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(contexto, "Erro: ${erro.message}", Toast.LENGTH_LONG).show()
-                }
-                return@withContext false
+                return@withContext Triple(
+                    json.getString("data"),
+                    json.getString("hora"),
+                    json.getString("padrao")
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@withContext null
             }
         }
     }
 
-    suspend fun sincronizarLista(pontosSalvos: List<JSONObject>): Int {
-        var sucessos = 0
-        pontosSalvos.forEach {
-            if(enviarPonto(it)) sucessos++
+    // Verifica se dados do usuário são iguais ao oficial do servidor
+    suspend fun verificarDadosUsuario(cpf: String): JSONObject? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val endereco = config.pegarValor("link_servidor", "").trim().removeSuffix("/")
+                val url = URL("$endereco/verificar-usuario?cpf=$cpf")
+                val conexao = url.openConnection() as HttpURLConnection
+                conexao.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
+                
+                val resposta = conexao.inputStream.reader().readText()
+                return@withContext JSONObject(resposta)
+            } catch (e: Exception) {
+                return@withContext null
+            }
         }
-        return sucessos
+    }
+
+    // Envia registro de ponto - SEM DATA/HORA NO ENVIO
+    suspend fun enviarPonto(registro: Map<String, Any>): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val endereco = config.pegarValor("link_servidor", "").trim().removeSuffix("/")
+                val url = URL("$endereco/receber_ponto")
+                val conexao = url.openConnection() as HttpURLConnection
+                conexao.requestMethod = "POST"
+                conexao.setRequestProperty("Content-Type", "application/json")
+                conexao.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
+                conexao.doOutput = true
+
+                val jsonEnvio = JSONObject(registro).toString()
+                conexao.outputStream.write(jsonEnvio.toByteArray(Charsets.UTF_8))
+
+                val resposta = conexao.responseCode
+                return@withContext resposta in 200..299
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return@withContext false
+            }
+        }
     }
 }

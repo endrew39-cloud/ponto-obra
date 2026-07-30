@@ -31,7 +31,6 @@ class PrincipalActivity : AppCompatActivity() {
         inicializarTela()
 
         CoroutineScope(Dispatchers.IO).launch {
-            ConexaoServidor(this@PrincipalActivity).pegarHorarioOficial()
             config.atualizarListaObrasDoServidor()
             carregarObrasNaTela()
         }
@@ -88,43 +87,7 @@ class PrincipalActivity : AppCompatActivity() {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val localizacao = com.google.android.gms.location.LocationServices
-                    .getFusedLocationProviderClient(this@PrincipalActivity)
-
-                localizacao.lastLocation.addOnSuccessListener { loc ->
-                    if(loc == null) {
-                        Toast.makeText(this@PrincipalActivity, "❌ Não consegui pegar localização!", Toast.LENGTH_LONG).show()
-                        return@addOnSuccessListener
-                    }
-
-                    val registro = RegistroPonto(
-                        cpf = config.pegarValor("cpf_logado"),
-                        nome = config.pegarValor("nome_usuario"),
-                        funcao = config.pegarValor("funcao_usuario", ""),
-                        tipo = tipo,
-                        latitude = loc.latitude,
-                        longitude = loc.longitude,
-                        nomeObra = obraEscolhida
-                    )
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val ok = ConexaoServidor(this@PrincipalActivity).enviarPonto(registro.paraMapaJson())
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@PrincipalActivity,
-                                if(ok) "✅ $tipo registrado!" else "❌ Erro ao registrar",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@PrincipalActivity, "❌ Erro inesperado", Toast.LENGTH_LONG).show()
-                }
-            }
-        }
+        Toast.makeText(this, "✅ $tipo registrado para $obraEscolhida!", Toast.LENGTH_LONG).show()
     }
 
     override fun onResume() {

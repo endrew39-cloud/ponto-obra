@@ -3,72 +3,59 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    android:padding="24dp">
+    android:background="#FFFFFF"
+    android:padding="16dp">
 
     <TextView
-        android:id="@+id/txtBemVindo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Olá!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="#212121"
-        android:layout_marginBottom="8dp"/>
-
-    <TextView
-        android:id="@+id/txtDataHora"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Data e Hora"
-        android:textSize="16sp"
-        android:textColor="#616161"
-        android:layout_marginBottom="32dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBaterPonto"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:text=" Bater Ponto"
-        android:textSize="18sp"
-        android:drawableStart="@android:drawable/ic_menu_myplaces"
-        android:drawablePadding="8dp"
-        android:backgroundTint="#2E7D32"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content"
+        android:text="Bem-vindo ao Ponto de Obra"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:textColor="#2E7D32"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Selecione a Obra">
+
+        <com.google.android.material.textfield.TextInputAutoCompleteTextView
+            android:id="@+id/listaObras"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textNoSuggestions"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnMeusRegistros"
+        android:id="@+id/btnEntrada"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="Meus Registros"
+        android:text="✅ Registrar Entrada"
+        android:textSize="16sp"
+        android:backgroundTint="#2E7D32"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSaida"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="⏹️ Registrar Saída"
+        android:textSize="16sp"
+        android:backgroundTint="#D32F2F"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCadastrarObra"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="📍 Cadastrar Nova Obra"
         android:textSize="16sp"
         android:backgroundTint="#1976D2"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSincronizar"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Sincronizar Offline"
-        android:textSize="16sp"
-        android:backgroundTint="#FF9800"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnConfigDev"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Configurações (Desenvolvedor)"
-        android:textSize="14sp"
-        android:backgroundTint="#424242"
-        android:textColor="@android:color/white"/>
+        android:textColor="#FFFFFF"/>
 
 </LinearLayout>

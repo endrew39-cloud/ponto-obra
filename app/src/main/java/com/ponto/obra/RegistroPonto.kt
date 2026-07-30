@@ -1,3 +1,5 @@
+package com.ponto.obra
+
 data class RegistroPonto(
     val cpf: String,
     val nome: String,

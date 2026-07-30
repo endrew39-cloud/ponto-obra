@@ -41,17 +41,24 @@ class PrincipalActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_principal)
+        try {
+            setContentView(R.layout.activity_principal)
 
-        sistemaAvisos = Notificacao(this)
-        config = ConfigSegura(this)
-        localizacao = Localizacao(this)
-        servidor = ConexaoServidor(this)
+            sistemaAvisos = Notificacao(this)
+            config = ConfigSegura(this)
+            localizacao = Localizacao(this)
+            servidor = ConexaoServidor(this)
 
-        inicializarElementos()
-        atualizarDataHora()
-        configurarBotoes()
-        verificarPermissoes()
+            inicializarElementos()
+            atualizarDataHora()
+            configurarBotoes()
+            verificarPermissoes()
+
+        } catch (erro: Exception) {
+            erro.printStackTrace()
+            Toast.makeText(this, "Problema ao carregar: reinstale o app", Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     private fun inicializarElementos() {

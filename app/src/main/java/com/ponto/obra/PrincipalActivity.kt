@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -178,10 +179,10 @@ class PrincipalActivity : AppCompatActivity() {
         entradaNome.hint = "Nome da Obra"
 
         val entradaLat = TextInputEditText(this)
-        entradaLat.hint = "Latitude (ex: -22.9068)"
+        entradaLat.hint = "Latitude (ex: -22.927458)"
 
         val entradaLon = TextInputEditText(this)
-        entradaLon.hint = "Longitude (ex: -43.1729)"
+        entradaLon.hint = "Longitude (ex: -43.645371)"
 
         val entradaRaio = TextInputEditText(this)
         entradaRaio.hint = "Raio em metros"
@@ -308,12 +309,14 @@ class PrincipalActivity : AppCompatActivity() {
                     obra = nomeEmpresa
                 )
 
-                val enviado = servidor.enviarRegistro(registro)
+                val jsonPonto = JSONObject(registro.paraMapa())
+                val enviado = servidor.enviarPonto(jsonPonto)
 
                 if (enviado) {
                     sistemaAvisos.mostrar("Ponto Registrado ✅", "Seu $tipo foi enviado ao servidor!")
                     Toast.makeText(this@PrincipalActivity, "Ponto registrado com sucesso!", Toast.LENGTH_LONG).show()
                 } else {
+                    SalvarOffline.salvar(this@PrincipalActivity, registro)
                     sistemaAvisos.mostrar("Sem conexão ⚠️", "Ponto salvo seguro no aparelho!")
                     Toast.makeText(this@PrincipalActivity, "Salvo offline, sincroniza depois!", Toast.LENGTH_LONG).show()
                 }
@@ -324,7 +327,12 @@ class PrincipalActivity : AppCompatActivity() {
 
     private fun sincronizarRegistros() {
         CoroutineScope(Dispatchers.IO).launch {
-            val qtd = servidor.sincronizarPendentes()
+            val listaSalvos = SalvarOffline.pegarTodos(this@PrincipalActivity)
+            val listaJson = listaSalvos.map { JSONObject(it.paraMapa()) }
+            val qtd = servidor.sincronizarLista(listaJson)
+            
+            if(qtd > 0) SalvarOffline.limparTodos(this@PrincipalActivity)
+
             withContext(Dispatchers.Main) {
                 Toast.makeText(this@PrincipalActivity, "$qtd registros sincronizados!", Toast.LENGTH_SHORT).show()
             }

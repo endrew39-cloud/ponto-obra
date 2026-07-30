@@ -2,7 +2,6 @@ package com.ponto.obra
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -11,7 +10,6 @@ import java.net.URL
 class ConfigSegura(val contexto: Context) {
     private val pasta: SharedPreferences = contexto.getSharedPreferences("dados_protegidos", Context.MODE_PRIVATE)
 
-    // Salvar e ler valores básicos
     fun salvarValor(chave: String, valor: String) {
         pasta.edit().putString(chave, valor).apply()
     }
@@ -20,18 +18,15 @@ class ConfigSegura(val contexto: Context) {
         return pasta.getString(chave, padrao) ?: padrao
     }
 
-    // Foto de perfil - SALVA SOMENTE NO CELULAR
     fun salvarFotoPerfil(cpf: String, fotoBase64: String) {
-        val chave = "foto_$cpf"
-        salvarValor(chave, fotoBase64)
+        salvarValor("foto_$cpf", fotoBase64)
     }
 
     fun pegarFotoPerfil(cpf: String): String? {
-        val chave = "foto_$cpf"
-        return pegarValor(chave, null)
+        val valor = pegarValor("foto_$cpf", "")
+        return if(valor.isEmpty()) null else valor
     }
 
-    // Atualizar lista de obras DIRETO DO SERVIDOR
     suspend fun atualizarListaObrasDoServidor(): Boolean {
         return try {
             val endereco = pegarValor("link_servidor", "").trim().removeSuffix("/")
@@ -46,7 +41,6 @@ class ConfigSegura(val contexto: Context) {
             val resposta = conexao.inputStream.reader().readText()
             val listaJson = JSONArray(resposta)
 
-            // Limpa lista antiga
             val editor = pasta.edit()
             val qtdAntiga = pegarValor("qtd_obras", "0").toInt()
             for(i in 0 until qtdAntiga) {
@@ -56,7 +50,6 @@ class ConfigSegura(val contexto: Context) {
                 editor.remove("obra_${i}_raio")
             }
 
-            // Salva lista nova
             editor.putString("qtd_obras", listaJson.length().toString())
             for(i in 0 until listaJson.length()){
                 val obj = listaJson.getJSONObject(i)

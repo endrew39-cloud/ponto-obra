@@ -1,6 +1,7 @@
 package com.ponto.obra
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -34,11 +35,8 @@ class PrincipalActivity : AppCompatActivity() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
         val ok = resultado.all { it.value }
-        if (ok) {
-            abrirOpcoesPonto()
-        } else {
-            Toast.makeText(this, "Permita localização para bater ponto", Toast.LENGTH_LONG).show()
-        }
+        if (ok) abrirOpcoesPonto()
+        else Toast.makeText(this, "Permita localização para bater ponto", Toast.LENGTH_LONG).show()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,17 +71,13 @@ class PrincipalActivity : AppCompatActivity() {
     }
 
     private fun configurarBotoes() {
-        btnBaterPonto.setOnClickListener {
-            checarPermissoesEAbrir()
-        }
+        btnBaterPonto.setOnClickListener { checarPermissoesEAbrir() }
 
         btnMeusRegistros.setOnClickListener {
-            Toast.makeText(this, "Em breve: Lista de registros", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, RegistrosActivity::class.java))
         }
 
-        btnSincronizar.setOnClickListener {
-            sincronizarRegistros()
-        }
+        btnSincronizar.setOnClickListener { sincronizarRegistros() }
 
         btnConfigDev.setOnClickListener {
             val entrada = TextInputEditText(this)
@@ -95,15 +89,82 @@ class PrincipalActivity : AppCompatActivity() {
                 .setView(entrada)
                 .setPositiveButton("Entrar") { _, _ ->
                     val senha = entrada.text.toString()
-                    if (config.validarAcessoDev(senha)) {
-                        abrirTelaConfiguracoes()
-                    } else {
-                        Toast.makeText(this, "Senha incorreta", Toast.LENGTH_SHORT).show()
-                    }
+                    if (config.validarAcessoDev(senha)) abrirMenuConfiguracoes()
+                    else Toast.makeText(this, "Senha incorreta", Toast.LENGTH_SHORT).show()
                 }
                 .setNegativeButton("Cancelar", null)
                 .show()
         }
+    }
+
+    private fun abrirMenuConfiguracoes() {
+        val opcoes = arrayOf(
+            "Alterar nome da empresa",
+            "Configurar endereço do servidor",
+            "Cadastrar nova obra",
+            "Ver todas obras cadastradas"
+        )
+
+        AlertDialog.Builder(this)
+            .setTitle("Configurações")
+            .setItems(opcoes) { _, indice ->
+                when(indice) {
+                    0 -> alterarNomeEmpresa()
+                    1 -> alterarServidor()
+                    2 -> cadastrarObra()
+                    3 -> mostrarObras()
+                }
+            }
+            .show()
+    }
+
+    private fun alterarNomeEmpresa() {
+        val entrada = TextInputEditText(this)
+        entrada.setText(config.pegarNomeEmpresa())
+
+        AlertDialog.Builder(this)
+            .setTitle("Nome da Empresa/Obra")
+            .setView(entrada)
+            .setPositiveButton("Salvar") { _, _ ->
+                val nome = entrada.text.toString().trim()
+                if (nome.isNotEmpty()) {
+                    config.salvarNomeEmpresa(nome)
+                    Toast.makeText(this, "Nome atualizado!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun alterarServidor() {
+        val entrada = TextInputEditText(this)
+        entrada.setText(config.pegarServidor())
+
+        AlertDialog.Builder(this)
+            .setTitle("Endereço do Servidor")
+            .setMessage("Ex: http://192.168.0.100:8080")
+            .setView(entrada)
+            .setPositiveButton("Salvar") { _, _ ->
+                val end = entrada.text.toString().trim()
+                if (end.isNotEmpty()) {
+                    config.salvarServidor(end)
+                    Toast.makeText(this, "Servidor atualizado!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .show()
+    }
+
+    private fun cadastrarObra() {
+        Toast.makeText(this, "Cadastro de obra: preencha os dados", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun mostrarObras() {
+        val lista = config.pegarTodasObras().joinToString("\n") {
+            "${it.nome} - Raio: ${it.raioPermitidoMetros}m"
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Obras Cadastradas")
+            .setMessage(lista.ifEmpty { "Nenhuma obra cadastrada ainda" })
+            .show()
     }
 
     private fun verificarPermissoes() {
@@ -113,7 +174,6 @@ class PrincipalActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             precisa.add(Manifest.permission.POST_NOTIFICATIONS)
         }
-
         permissaoLocalizacao.launch(precisa.toTypedArray())
     }
 
@@ -142,25 +202,37 @@ class PrincipalActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             val local = localizacao.pegarAtual()
             val nomeEmpresa = config.pegarNomeEmpresa()
-            val cpfUsuario = "12345678900" // Aqui depois pega do login salvo
+            val obraAtual = config.pegarObraAtual()
+            val cpfUsuario = "12345678900"
 
-            val registro = RegistroPonto.criarNovo(
-                cpf = cpfUsuario,
-                tipo = tipo,
-                lat = local.first,
-                lon = local.second,
-                obra = nomeEmpresa
-            )
-
-            val enviado = servidor.enviarRegistro(registro)
+            val podeRegistrar = obraAtual?.let {
+                ValidacaoLocal.estaDentroDaObra(local.first, local.second, it)
+            } ?: true
 
             withContext(Dispatchers.Main) {
+                if (!podeRegistrar) {
+                    Toast.makeText(this@PrincipalActivity,
+                        "Você não está dentro do raio permitido da obra!",
+                        Toast.LENGTH_LONG).show()
+                    return@withContext
+                }
+
+                val registro = RegistroPonto.criarNovo(
+                    cpf = cpfUsuario,
+                    tipo = tipo,
+                    lat = local.first,
+                    lon = local.second,
+                    obra = nomeEmpresa
+                )
+
+                val enviado = servidor.enviarRegistro(registro)
+
                 if (enviado) {
                     sistemaAvisos.mostrar("Ponto Registrado ✅", "Seu $tipo foi enviado ao servidor!")
                     Toast.makeText(this@PrincipalActivity, "Ponto registrado com sucesso!", Toast.LENGTH_LONG).show()
                 } else {
-                    sistemaAvisos.mostrar("Sem conexão ⚠️", "Ponto salvo seguro no aparelho, sincroniza depois!")
-                    Toast.makeText(this@PrincipalActivity, "Salvo offline, sincroniza quando voltar internet", Toast.LENGTH_LONG).show()
+                    sistemaAvisos.mostrar("Sem conexão ⚠️", "Ponto salvo seguro no aparelho!")
+                    Toast.makeText(this@PrincipalActivity, "Salvo offline, sincroniza depois!", Toast.LENGTH_LONG).show()
                 }
                 atualizarDataHora()
             }
@@ -174,24 +246,5 @@ class PrincipalActivity : AppCompatActivity() {
                 Toast.makeText(this@PrincipalActivity, "$qtd registros sincronizados!", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun abrirTelaConfiguracoes() {
-        val entradaNome = TextInputEditText(this)
-        entradaNome.setText(config.pegarNomeEmpresa())
-        entradaNome.hint = "Nome da Empresa/Obra"
-
-        AlertDialog.Builder(this)
-            .setTitle("Configuração da Empresa")
-            .setView(entradaNome)
-            .setPositiveButton("Salvar") { _, _ ->
-                val nome = entradaNome.text.toString().trim()
-                if (nome.isNotEmpty()) {
-                    config.salvarNomeEmpresa(nome)
-                    Toast.makeText(this, "Nome atualizado! Volte para o login para ver a alteração", Toast.LENGTH_LONG).show()
-                }
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
     }
 }

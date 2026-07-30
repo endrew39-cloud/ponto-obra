@@ -12,7 +12,6 @@ import java.util.concurrent.Executor
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var executor: Executor
-    private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var btnEntrar: MaterialButton
     private lateinit var txtCpf: TextInputEditText
 
@@ -25,13 +24,12 @@ class LoginActivity : AppCompatActivity() {
         txtCpf = findViewById(R.id.txtCpf)
         executor = ContextCompat.getMainExecutor(this)
 
-        biometricPrompt = BiometricPrompt(this, executor,
+        val biometric = BiometricPrompt(this, executor,
             object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
+                override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(r)
                     logar()
                 }
-
                 override fun onAuthenticationFailed() {
                     super.onAuthenticationFailed()
                     Toast.makeText(this@LoginActivity, "Biometria não reconhecida", Toast.LENGTH_SHORT).show()
@@ -48,10 +46,10 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        val config = ConfigSegura(this)
-        config.salvarValor("cpf_logado", cpf)
-        config.salvarValor("nome_usuario", "Funcionário Teste")
-        config.salvarValor("funcao_usuario", "Geral")
+        val cfg = ConfigSegura(this)
+        cfg.salvarValor("cpf_logado", cpf)
+        cfg.salvarValor("nome_usuario", "Funcionário Teste")
+        cfg.salvarValor("funcao_usuario", "Geral")
 
         startActivity(Intent(this, PrincipalActivity::class.java))
         finish()

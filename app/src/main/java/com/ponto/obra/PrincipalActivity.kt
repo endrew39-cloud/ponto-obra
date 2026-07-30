@@ -55,8 +55,8 @@ class PrincipalActivity : AppCompatActivity() {
 
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
-            val obras = config.carregarListaObras().map { it.nome }
-            val adaptador = android.widget.ArrayAdapter(
+            val obras: List<String> = config.carregarListaObras().map { it.nome }
+            val adaptador = android.widget.ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -67,7 +66,8 @@ class PrincipalActivity : AppCompatActivity() {
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras = config.carregarListaObras().map { it.first }
-            val adaptador = ArrayAdapter<String>(
+            // AQUI FOI A ALTERAÇÃO: NOME COMPLETO PARA NÃO TER DÚVIDA
+            val adaptador = android.widget.ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras
@@ -122,7 +122,7 @@ class PrincipalActivity : AppCompatActivity() {
                 localizacao.lastLocation.addOnSuccessListener { loc ->
                     if(loc == null) {
                         Toast.makeText(this@PrincipalActivity, 
-                            "❌ Não consegui pegar sua localização!", 
+                            "❌ Não consegui pegar your localização!", 
                             Toast.LENGTH_LONG).show()
                         return@addOnSuccessListener
                     }

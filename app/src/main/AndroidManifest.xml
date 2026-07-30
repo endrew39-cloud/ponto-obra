@@ -12,8 +12,8 @@
         android:allowBackup="true"
         android:requestLegacyExternalStorage="true"
         android:usesCleartextTraffic="true"
-        android:icon="@android:drawable/ic_menu_info_details"
-        android:roundIcon="@android:drawable/ic_menu_info_details"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.PontoObra"
         tools:targetApi="31">

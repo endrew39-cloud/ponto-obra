@@ -2,8 +2,6 @@ package com.ponto.obra
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
@@ -51,23 +49,33 @@ class ConfigSegura(private val contexto: Context) {
         val lista = pegarTodasObras().toMutableList()
         lista.add(obra)
         val nomes = lista.joinToString(" | ") { it.nome }
+        val lats = lista.joinToString(" | ") { it.latitude.toString() }
+        val lons = lista.joinToString(" | ") { it.longitude.toString() }
         val raios = lista.joinToString(" | ") { it.raioPermitidoMetros.toString() }
         preferencias.edit()
             .putString("lista_obras_nomes", nomes)
+            .putString("lista_obras_lat", lats)
+            .putString("lista_obras_lon", lons)
             .putString("lista_obras_raios", raios)
             .apply()
     }
 
     fun pegarTodasObras(): List<Obra> {
         val nomes = preferencias.getString("lista_obras_nomes", "") ?: ""
+        val lats = preferencias.getString("lista_obras_lat", "") ?: ""
+        val lons = preferencias.getString("lista_obras_lon", "") ?: ""
         val raios = preferencias.getString("lista_obras_raios", "") ?: ""
 
-        if (nomes.isEmpty() || raios.isEmpty()) return emptyList()
+        if (nomes.isEmpty() || lats.isEmpty() || lons.isEmpty() || raios.isEmpty()) return emptyList()
 
         val listaNomes = nomes.split(" | ").filter { it.isNotEmpty() }
+        val listaLats = lats.split(" | ").mapNotNull { it.toDoubleOrNull() }
+        val listaLons = lons.split(" | ").mapNotNull { it.toDoubleOrNull() }
         val listaRaios = raios.split(" | ").mapNotNull { it.toIntOrNull() }
 
-        return listaNomes.zip(listaRaios) { n, r -> Obra(n, r) }
+        return listaNomes.zip(listaLats.zip(listaLons.zip(listaRaios))) { nome, dados ->
+            Obra(nome, dados.first, dados.second.first, dados.second.second)
+        }
     }
 
     fun pegarObraAtual(): Obra? {

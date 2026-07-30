@@ -45,12 +45,10 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this, "Digite o CPF!", Toast.LENGTH_LONG).show()
             return
         }
-
         val cfg = ConfigSegura(this)
         cfg.salvarValor("cpf_logado", cpf)
         cfg.salvarValor("nome_usuario", "Funcionário Teste")
         cfg.salvarValor("funcao_usuario", "Geral")
-
         startActivity(Intent(this, PrincipalActivity::class.java))
         finish()
     }

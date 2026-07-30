@@ -88,7 +88,7 @@ class PrincipalActivity : AppCompatActivity() {
 
         btnConfigDev.setOnClickListener {
             val entrada = TextInputEditText(this)
-            entrada.hint = "Senha Mestra"
+            entrada.hint = "Digite a senha mestra"
 
             AlertDialog.Builder(this)
                 .setTitle("Acesso Restrito")
@@ -131,7 +131,7 @@ class PrincipalActivity : AppCompatActivity() {
 
     private fun alterarNomeEmpresa() {
         val entrada = TextInputEditText(this)
-        entrada.hint = "Nome da empresa ou obra atual"
+        entrada.hint = "Digite o nome da empresa/obra"
         entrada.setText(config.pegarNomeEmpresa())
 
         AlertDialog.Builder(this)
@@ -153,7 +153,7 @@ class PrincipalActivity : AppCompatActivity() {
 
     private fun alterarServidor() {
         val entrada = TextInputEditText(this)
-        entrada.hint = "Ex: https://seu-servidor.ngrok.io"
+        entrada.hint = "Ex: https://codigo.ngrok.io"
         entrada.setText(config.pegarServidor())
 
         AlertDialog.Builder(this)
@@ -177,14 +177,22 @@ class PrincipalActivity : AppCompatActivity() {
         val entradaNome = TextInputEditText(this)
         entradaNome.hint = "Nome da Obra"
 
+        val entradaLat = TextInputEditText(this)
+        entradaLat.hint = "Latitude (ex: -22.9068)"
+
+        val entradaLon = TextInputEditText(this)
+        entradaLon.hint = "Longitude (ex: -43.1729)"
+
         val entradaRaio = TextInputEditText(this)
-        entradaRaio.hint = "Raio permitido (metros)"
+        entradaRaio.hint = "Raio em metros"
         entradaRaio.setText("100")
 
         val formulario = android.widget.LinearLayout(this)
         formulario.orientation = android.widget.LinearLayout.VERTICAL
         formulario.setPadding(48, 24, 48, 24)
         formulario.addView(entradaNome)
+        formulario.addView(entradaLat)
+        formulario.addView(entradaLon)
         formulario.addView(entradaRaio)
 
         AlertDialog.Builder(this)
@@ -192,15 +200,25 @@ class PrincipalActivity : AppCompatActivity() {
             .setView(formulario)
             .setPositiveButton("Salvar") { _, _ ->
                 val nome = entradaNome.text.toString().trim()
+                val latTexto = entradaLat.text.toString().trim()
+                val lonTexto = entradaLon.text.toString().trim()
                 val raioTexto = entradaRaio.text.toString().trim()
 
-                if (nome.isEmpty() || raioTexto.isEmpty()) {
+                if (nome.isEmpty() || latTexto.isEmpty() || lonTexto.isEmpty() || raioTexto.isEmpty()) {
                     Toast.makeText(this, "Preencha todos os campos!", Toast.LENGTH_LONG).show()
                     return@setPositiveButton
                 }
 
+                val lat = latTexto.toDoubleOrNull()
+                val lon = lonTexto.toDoubleOrNull()
                 val raio = raioTexto.toIntOrNull() ?: 100
-                val obra = Obra(nome, raio)
+
+                if (lat == null || lon == null) {
+                    Toast.makeText(this, "Digite latitude e longitude válidas!", Toast.LENGTH_LONG).show()
+                    return@setPositiveButton
+                }
+
+                val obra = Obra(nome, lat, lon, raio)
                 config.salvarObra(obra)
                 Toast.makeText(this, "Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
             }
@@ -221,7 +239,7 @@ class PrincipalActivity : AppCompatActivity() {
         }
 
         val texto = lista.mapIndexed { indice, obra ->
-            "${indice + 1}. ${obra.nome}\n   Raio permitido: ${obra.raioPermitidoMetros} metros"
+            "${indice + 1}. ${obra.nome}\n   Latitude: ${obra.latitude}\n   Longitude: ${obra.longitude}\n   Raio permitido: ${obra.raioPermitidoMetros} metros"
         }.joinToString("\n\n")
 
         AlertDialog.Builder(this)

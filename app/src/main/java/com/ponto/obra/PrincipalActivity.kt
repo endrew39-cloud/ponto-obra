@@ -66,12 +66,11 @@ class PrincipalActivity : AppCompatActivity() {
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras = config.carregarListaObras().map { it.first }
-            // AQUI FOI A ALTERAÇÃO: NOME COMPLETO PARA NÃO TER DÚVIDA
-            val adaptador = android.widget.ArrayAdapter<String>(
+            val adaptador = object : android.widget.ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras
-            )
+            ) {}
             listaObras.setAdapter(adaptador)
         }
     }
@@ -122,7 +121,7 @@ class PrincipalActivity : AppCompatActivity() {
                 localizacao.lastLocation.addOnSuccessListener { loc ->
                     if(loc == null) {
                         Toast.makeText(this@PrincipalActivity, 
-                            "❌ Não consegui pegar your localização!", 
+                            "❌ Não consegui pegar sua localização!", 
                             Toast.LENGTH_LONG).show()
                         return@addOnSuccessListener
                     }

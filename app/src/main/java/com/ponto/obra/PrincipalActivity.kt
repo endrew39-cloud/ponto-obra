@@ -31,15 +31,7 @@ class PrincipalActivity : AppCompatActivity() {
         inicializarTela()
 
         CoroutineScope(Dispatchers.IO).launch {
-            val horario = ConexaoServidor(this@PrincipalActivity).pegarHorarioOficial()
-            if(horario == null) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@PrincipalActivity, 
-                        "❌ Não foi possível pegar horário oficial!\nVerifique conexão.", 
-                        Toast.LENGTH_LONG).show()
-                }
-                return@launch
-            }
+            ConexaoServidor(this@PrincipalActivity).pegarHorarioOficial()
             config.atualizarListaObrasDoServidor()
             carregarObrasNaTela()
         }
@@ -65,7 +57,7 @@ class PrincipalActivity : AppCompatActivity() {
 
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
-            val obras = config.carregarListaObras().map { it.first }
+            val obras = config.carregarListaObras().map { it.nome }
             val adaptador = object : android.widget.ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
@@ -100,29 +92,10 @@ class PrincipalActivity : AppCompatActivity() {
             try {
                 val localizacao = com.google.android.gms.location.LocationServices
                     .getFusedLocationProviderClient(this@PrincipalActivity)
-                
-                if (ActivityCompat.checkSelfPermission(
-                        this@PrincipalActivity,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(
-                        this@PrincipalActivity,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@PrincipalActivity, 
-                            "❌ Permissão de localização negada!", 
-                            Toast.LENGTH_LONG).show()
-                    }
-                    return@launch
-                }
 
                 localizacao.lastLocation.addOnSuccessListener { loc ->
                     if(loc == null) {
-                        Toast.makeText(this@PrincipalActivity, 
-                            "❌ Não consegui pegar sua localização!", 
-                            Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@PrincipalActivity, "❌ Não consegui pegar localização!", Toast.LENGTH_LONG).show()
                         return@addOnSuccessListener
                     }
 
@@ -137,25 +110,18 @@ class PrincipalActivity : AppCompatActivity() {
                     )
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        val sucesso = ConexaoServidor(this@PrincipalActivity).enviarPonto(registro.paraMapaJson())
+                        val ok = ConexaoServidor(this@PrincipalActivity).enviarPonto(registro.paraMapaJson())
                         withContext(Dispatchers.Main) {
-                            if(sucesso) {
-                                Toast.makeText(this@PrincipalActivity, 
-                                    "✅ $tipo registrado com sucesso!", 
-                                    Toast.LENGTH_LONG).show()
-                            } else {
-                                Toast.makeText(this@PrincipalActivity, 
-                                    "❌ Erro ao registrar ponto!", 
-                                    Toast.LENGTH_LONG).show()
-                            }
+                            Toast.makeText(this@PrincipalActivity,
+                                if(ok) "✅ $tipo registrado!" else "❌ Erro ao registrar",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@PrincipalActivity, 
-                        "❌ Erro inesperado!", 
-                        Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@PrincipalActivity, "❌ Erro inesperado", Toast.LENGTH_LONG).show()
                 }
             }
         }

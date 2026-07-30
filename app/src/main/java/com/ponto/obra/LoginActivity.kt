@@ -17,15 +17,15 @@ class LoginActivity : MainActivity() {
     private lateinit var edtSenha: TextInputEditText
     private lateinit var config: ConfigSegura
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         try {
             config = ConfigSegura(this)
-        val nomeEmpresa = config.pegarNomeEmpresa()
-        findViewById<TextView>(R.id.txtEmpresa).text = nomeEmpresa
+            val nomeEmpresa = config.pegarNomeEmpresa()
+            findViewById<TextView>(R.id.txtEmpresa).text = nomeEmpresa
+
             edtCpf = findViewById(R.id.edtCpf)
             edtSenha = findViewById(R.id.edtSenha)
             val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
@@ -37,9 +37,9 @@ class LoginActivity : MainActivity() {
                     override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
                         Toast.makeText(this@LoginActivity, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
-                        val irParaPrincipal = Intent(this, PrincipalActivity::class.java)
-    startActivity(irParaPrincipal)
-    finish()
+                        val irParaPrincipal = Intent(this@LoginActivity, PrincipalActivity::class.java)
+                        startActivity(irParaPrincipal)
+                        finish()
                     }
 
                     override fun onAuthenticationFailed() {
@@ -55,9 +55,8 @@ class LoginActivity : MainActivity() {
                 if (cpf == "12345678900" && senha == "123456") {
                     Toast.makeText(this, "Login efetuado!", Toast.LENGTH_SHORT).show()
                     val irParaPrincipal = Intent(this, PrincipalActivity::class.java)
-    startActivity(irParaPrincipal)
-    finish()
-}
+                    startActivity(irParaPrincipal)
+                    finish()
                 } else {
                     Toast.makeText(this@LoginActivity, getString(R.string.erro_login), Toast.LENGTH_SHORT).show()
                 }
@@ -72,6 +71,7 @@ class LoginActivity : MainActivity() {
 
                 biometricPrompt.authenticate(promptInfo)
             }
+
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Erro ao carregar tela", Toast.LENGTH_SHORT).show()

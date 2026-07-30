@@ -24,7 +24,7 @@ class PrincipalActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.ponto.obra.R.layout.activity_principal)
+        setContentView(R.layout.activity_principal)
         supportActionBar?.title = "Ponto de Obra"
 
         config = ConfigSegura(this)
@@ -48,10 +48,10 @@ class PrincipalActivity : AppCompatActivity() {
     }
 
     private fun inicializarTela() {
-        btnEntrada = findViewById(com.ponto.obra.R.id.btnEntrada)
-        btnSaida = findViewById(com.ponto.obra.R.id.btnSaida)
-        btnCadastrarObra = findViewById(com.ponto.obra.R.id.btnCadastrarObra)
-        listaObras = findViewById(com.ponto.obra.R.id.listaObras)
+        btnEntrada = findViewById(R.id.btnEntrada)
+        btnSaida = findViewById(R.id.btnSaida)
+        btnCadastrarObra = findViewById(R.id.btnCadastrarObra)
+        listaObras = findViewById(R.id.listaObras)
 
         val nomeUsuario = config.pegarValor("nome_usuario", "Funcionário")
         Toast.makeText(this, "👋 Olá $nomeUsuario!", Toast.LENGTH_SHORT).show()
@@ -59,18 +59,18 @@ class PrincipalActivity : AppCompatActivity() {
         btnEntrada.setOnClickListener { registrarPonto("Entrada") }
         btnSaida.setOnClickListener { registrarPonto("Saída") }
         btnCadastrarObra.setOnClickListener {
-            startActivity(Intent(this, com.ponto.obra.CadastroObraMapaActivity::class.java))
+            startActivity(Intent(this, CadastroObraMapaActivity::class.java))
         }
     }
 
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras = config.carregarListaObras().map { it.first }
-            val adaptador = android.widget.ArrayAdapter<String>(
+            val adaptador = object : android.widget.ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
-                obras.toList()
-            )
+                obras
+            ) {}
             listaObras.setAdapter(adaptador)
         }
     }

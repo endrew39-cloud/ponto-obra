@@ -1,5 +1,6 @@
 package com.ponto.obra
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
@@ -36,6 +37,9 @@ class LoginActivity : MainActivity() {
                     override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                         super.onAuthenticationSucceeded(result)
                         Toast.makeText(this@LoginActivity, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
+                        val irParaPrincipal = Intent(this, PrincipalActivity::class.java)
+    startActivity(irParaPrincipal)
+    finish()
                     }
 
                     override fun onAuthenticationFailed() {
@@ -50,6 +54,10 @@ class LoginActivity : MainActivity() {
 
                 if (cpf == "12345678900" && senha == "123456") {
                     Toast.makeText(this, "Login efetuado!", Toast.LENGTH_SHORT).show()
+                    val irParaPrincipal = Intent(this, PrincipalActivity::class.java)
+    startActivity(irParaPrincipal)
+    finish()
+}
                 } else {
                     Toast.makeText(this@LoginActivity, getString(R.string.erro_login), Toast.LENGTH_SHORT).show()
                 }

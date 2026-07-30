@@ -2,80 +2,58 @@ package com.ponto.obra
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
-import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import java.util.concurrent.Executor
 
-class LoginActivity : MainActivity() {
+class LoginActivity : AppCompatActivity() {
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
-    private lateinit var edtCpf: TextInputEditText
-    private lateinit var edtSenha: TextInputEditText
-    private lateinit var config: ConfigSegura
+    private lateinit var btnEntrar: MaterialButton
+    private lateinit var txtCpf: TextInputEditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+        supportActionBar?.title = "Acesso ao Sistema"
 
-        try {
-            config = ConfigSegura(this)
-            val nomeEmpresa = config.pegarNomeEmpresa()
-            findViewById<TextView>(R.id.txtEmpresa).text = nomeEmpresa
+        btnEntrar = findViewById(R.id.btnEntrar)
+        txtCpf = findViewById(R.id.txtCpf)
+        executor = ContextCompat.getMainExecutor(this)
 
-            edtCpf = findViewById(R.id.edtCpf)
-            edtSenha = findViewById(R.id.edtSenha)
-            val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
-            val btnBiometria = findViewById<MaterialButton>(R.id.btnBiometria)
-
-            executor = ContextCompat.getMainExecutor(this)
-            biometricPrompt = BiometricPrompt(this, executor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                        super.onAuthenticationSucceeded(result)
-                        Toast.makeText(this@LoginActivity, "Autenticado com sucesso!", Toast.LENGTH_SHORT).show()
-                        val irParaPrincipal = Intent(this@LoginActivity, PrincipalActivity::class.java)
-                        startActivity(irParaPrincipal)
-                        finish()
-                    }
-
-                    override fun onAuthenticationFailed() {
-                        super.onAuthenticationFailed()
-                        Toast.makeText(this@LoginActivity, "Falha na autenticação", Toast.LENGTH_SHORT).show()
-                    }
-                })
-
-            btnLogin.setOnClickListener {
-                val cpf = edtCpf.text.toString().trim()
-                val senha = edtSenha.text.toString().trim()
-
-                if (cpf == "12345678900" && senha == "123456") {
-                    Toast.makeText(this, "Login efetuado!", Toast.LENGTH_SHORT).show()
-                    val irParaPrincipal = Intent(this, PrincipalActivity::class.java)
-                    startActivity(irParaPrincipal)
-                    finish()
-                } else {
-                    Toast.makeText(this@LoginActivity, getString(R.string.erro_login), Toast.LENGTH_SHORT).show()
+        biometricPrompt = BiometricPrompt(this, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    logar()
                 }
-            }
 
-            btnBiometria.setOnClickListener {
-                val promptInfo = BiometricPrompt.PromptInfo.Builder()
-                    .setTitle("Verificação de identidade")
-                    .setSubtitle("Use sua digital ou rosto para acessar")
-                    .setNegativeButtonText("Cancelar")
-                    .build()
+                override fun onAuthenticationFailed() {
+                    super.onAuthenticationFailed()
+                    Toast.makeText(this@LoginActivity, "Biometria não reconhecida", Toast.LENGTH_SHORT).show()
+                }
+            })
 
-                biometricPrompt.authenticate(promptInfo)
-            }
+        btnEntrar.setOnClickListener { logar() }
+    }
 
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Erro ao carregar tela", Toast.LENGTH_SHORT).show()
-            finish()
+    private fun logar() {
+        val cpf = txtCpf.text.toString().trim()
+        if(cpf.isEmpty()) {
+            Toast.makeText(this, "Digite o CPF!", Toast.LENGTH_LONG).show()
+            return
         }
+
+        val config = ConfigSegura(this)
+        config.salvarValor("cpf_logado", cpf)
+        config.salvarValor("nome_usuario", "Funcionário Teste")
+        config.salvarValor("funcao_usuario", "Geral")
+
+        startActivity(Intent(this, PrincipalActivity::class.java))
+        finish()
     }
 }

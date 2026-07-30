@@ -4,13 +4,9 @@ import kotlin.math.*
 
 object ValidacaoLocal {
     fun estaDentroDaObra(latUsuario: Double, lonUsuario: Double, obra: Obra): Boolean {
-            // Coordenada de teste, depois altera para a sua obra
-            val latObra = -22.9068
-            val lonObra = -43.1729
-            
-            val distancia = calcularDistancia(latUsuario, lonUsuario, latObra, lonObra)
-            return distancia <= obra.raioPermitidoMetros
-        }
+        val distancia = calcularDistancia(latUsuario, lonUsuario, obra.latitude, obra.longitude)
+        return distancia <= obra.raioPermitidoMetros
+    }
 
     private fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val raioTerra = 6371000 // metros

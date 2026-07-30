@@ -1,4 +1,4 @@
-package com.seuapp.pontoobra
+package com.ponto.obra
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -6,130 +6,81 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import java.net.HttpURLConnection
-import java.net.URL
 
-class CadastroObraMapaActivity : AppCompatActivity() {
-    private lateinit var mapa: MapView
-    private lateinit var txtNomeObra: TextInputEditText
-    private lateinit var txtRaio: TextInputEditText
-    private lateinit var btnSalvarObra: MaterialButton
+class CadastroObraMapaActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var config: ConfigSegura
-    private var marcadorEscolhido: Marker? = null
+    private lateinit var mapaObra: GoogleMap
+    private lateinit var txtNomeObra: TextInputEditText
+    private lateinit var txtRaioObra: TextInputEditText
+    private lateinit var btnSalvarObraMapa: MaterialButton
+    private var localEscolhido: LatLng? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cadastro_obra_mapa)
-        supportActionBar?.title = "Cadastrar Obra no Mapa"
+        supportActionBar?.title = "Cadastrar Obra"
 
         config = ConfigSegura(this)
-        inicializarComponentes()
-        verificarPermissaoLocalizacao()
-    }
+        val mapaFragment = supportFragmentManager.findFragmentById(R.id.mapaObra) as SupportMapFragment
+        mapaFragment.getMapAsync(this)
 
-    private fun inicializarComponentes() {
-        mapa = findViewById(R.id.mapaObra)
         txtNomeObra = findViewById(R.id.txtNomeObra)
-        txtRaio = findViewById(R.id.txtRaioObra)
-        btnSalvarObra = findViewById(R.id.btnSalvarObraMapa)
+        txtRaioObra = findViewById(R.id.txtRaioObra)
+        btnSalvarObraMapa = findViewById(R.id.btnSalvarObraMapa)
 
-        txtRaio.setText("100")
-        mapa.setMultiTouchControls(true)
-        mapa.controller?.setZoom(15.0)
-        mapa.controller?.setCenter(GeoPoint(-22.9068, -43.1729))
-
-        mapa.setOnMapClickListener { _, ponto ->
-            adicionarOuMoverMarcador(ponto)
-        }
-
-        btnSalvarObra.setOnClickListener { enviarParaServidor() }
+        btnSalvarObraMapa.setOnClickListener { salvarObra() }
     }
 
-    private fun adicionarOuMoverMarcador(ponto: GeoPoint) {
-        mapa.overlays.remove(marcadorEscolhido)
-        marcadorEscolhido = Marker(mapa).apply {
-            position = ponto
-            title = "Local da Obra"
-            isDraggable = true
+    override fun onMapReady(mapa: GoogleMap) {
+        mapaObra = mapa
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                101
+            )
+            return
         }
-        mapa.overlays.add(marcadorEscolhido)
-        mapa.invalidate()
-    }
-
-    private fun verificarPermissaoLocalizacao() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) 
-            == PackageManager.PERMISSION_GRANTED) {
-            val localizacao = com.google.android.gms.location.LocationServices
-                .getFusedLocationProviderClient(this)
-            localizacao.lastLocation.addOnSuccessListener { loc ->
-                if(loc != null) {
-                    val meuPonto = GeoPoint(loc.latitude, loc.longitude)
-                    mapa.controller?.setCenter(meuPonto)
-                    adicionarOuMoverMarcador(meuPonto)
-                }
-            }
+        mapa.isMyLocationEnabled = true
+        mapa.setOnMapClickListener { ponto ->
+            mapa.clear()
+            mapa.addMarker(MarkerOptions().position(ponto).title("Local da Obra"))
+            mapa.animateCamera(CameraUpdateFactory.newLatLngZoom(ponto, 15f))
+            localEscolhido = ponto
         }
     }
 
-    private fun enviarParaServidor() {
+    private fun salvarObra() {
         val nome = txtNomeObra.text.toString().trim()
-        val raio = txtRaio.text.toString().trim().toIntOrNull() ?: 100
-        val ponto = marcadorEscolhido?.position
+        val raio = txtRaioObra.text.toString().trim()
 
-        if(nome.isEmpty()) {
-            Toast.makeText(this, "Digite o nome da obra!", Toast.LENGTH_LONG).show()
-            return
-        }
-        if(ponto == null) {
-            Toast.makeText(this, "Clique no mapa para marcar o local!", Toast.LENGTH_LONG).show()
+        if(nome.isEmpty() || raio.isEmpty() || localEscolhido == null) {
+            Toast.makeText(this, "Preencha todos os dados e escolha o local no mapa!", Toast.LENGTH_LONG).show()
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val end = config.pegarValor("link_servidor", "").trim().removeSuffix("/")
-                val url = URL("$end/admin/salvar-obra")
-                val con = url.openConnection() as HttpURLConnection
-                con.requestMethod = "POST"
-                con.setRequestProperty("Content-Type", "application/json")
-                con.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
-                con.doOutput = true
+        val qtdAtual = config.pegarValor("qtd_obras", "0").toInt()
+        val editor = config.pasta.edit()
+        editor.putString("obra_${qtdAtual}_nome", nome)
+        editor.putString("obra_${qtdAtual}_lat", localEscolhido!!.latitude.toString())
+        editor.putString("obra_${qtdAtual}_lon", localEscolhido!!.longitude.toString())
+        editor.putString("obra_${qtdAtual}_raio", raio)
+        editor.putString("qtd_obras", (qtdAtual + 1).toString())
+        editor.apply()
 
-                val dados = JSONObject().apply {
-                    put("nome", nome)
-                    put("latitude", ponto.latitude)
-                    put("longitude", ponto.longitude)
-                    put("raio", raio)
-                }
-
-                con.outputStream.write(dados.toString().toByteArray())
-                val resposta = con.responseCode
-
-                withContext(Dispatchers.Main) {
-                    if(resposta in 200..299) {
-                        Toast.makeText(this@CadastroObraMapaActivity, 
-                            "✅ Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
-                        finish()
-                    } else {
-                    Toast.makeText(this@CadastroObraMapaActivity, 
-                            "❌ Erro ao cadastrar obra!", Toast.LENGTH_LONG).show()
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CadastroObraMapaActivity, 
-                        "❌ Sem conexão com o servidor!", Toast.LENGTH_LONG).show()
-                }
-            }
+        Toast.makeText(this, "✅ Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
+        finish()
     }
 }

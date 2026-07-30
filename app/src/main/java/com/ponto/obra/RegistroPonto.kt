@@ -1,56 +1,35 @@
 package com.ponto.obra
 
-import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKeys
-import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class RegistroPonto(context: Context) {
+data class RegistroPonto(
+    val id: String = "",
+    val cpfFuncionario: String = "",
+    val tipo: String = "",
+    val dataHora: String = "",
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val nomeObra: String = "",
+    val sincronizado: Boolean = false,
+    val hashSeguranca: String = ""
+) {
+    companion object {
+        fun criarNovo(cpf: String, tipo: String, lat: Double, lon: Double, obra: String): RegistroPonto {
+            val dataFormatada = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale("pt", "BR")).format(Date())
+            val dadosBrutos = "$cpf|$tipo|$dataFormatada|$lat|$lon|$obra"
+            val hash = dadosBrutos.hashCode().toString()
 
-    private val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-
-    private val arquivoSeguro = EncryptedSharedPreferences.create(
-        "registros_offline",
-        masterKeyAlias,
-        context,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    fun salvarOffline(tipo: String, latitude: Double, longitude: Double, obra: String): Boolean {
-        return try {
-            val dataHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("pt", "BR")).format(Date())
-            
-            val registro = JSONObject().apply {
-                put("tipo", tipo)
-                put("dataHora", dataHora)
-                put("latitude", latitude)
-                put("longitude", longitude)
-                put("obra", obra)
-                put("sincronizado", false)
-            }
-
-            arquivoSeguro.edit()
-                .putString("ponto_${System.currentTimeMillis()}", registro.toString())
-                .apply()
-            
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            return RegistroPonto(
+                cpfFuncionario = cpf,
+                tipo = tipo,
+                dataHora = dataFormatada,
+                latitude = lat,
+                longitude = lon,
+                nomeObra = obra,
+                hashSeguranca = hash
+            )
         }
-    }
-
-    fun pegarRegistrosPendentes(): List<JSONObject> {
-        val lista = mutableListOf<JSONObject>()
-        arquivoSeguro.all.forEach { _, valor ->
-            try {
-                lista.add(JSONObject(valor.toString()))
-            } catch (_: Exception) {}
-        }
-        return lista
     }
 }

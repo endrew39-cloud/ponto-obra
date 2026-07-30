@@ -1,3 +1,5 @@
+package com.ponto.obra
+
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Base64
@@ -6,8 +8,8 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-class ConfigSegura(contexto: Context) {
-    private val pasta: SharedPreferences = contexto.getSharedPreferences("dados_protegidos", Context.MODE_PRIVATE or Context.MODE_ENCRYPTED)
+class ConfigSegura(val contexto: Context) {
+    private val pasta: SharedPreferences = contexto.getSharedPreferences("dados_protegidos", Context.MODE_PRIVATE)
 
     // Salvar e ler valores básicos
     fun salvarValor(chave: String, valor: String) {

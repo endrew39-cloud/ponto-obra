@@ -1,3 +1,5 @@
+package com.ponto.obra
+
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -8,7 +10,6 @@ import java.net.URL
 class ConexaoServidor(val contexto: Context) {
     private val config = ConfigSegura(contexto)
 
-    // PEGA HORÁRIO OFICIAL SOMENTE DO SERVIDOR - NUNCA DO CELULAR
     suspend fun pegarHorarioOficial(): Triple<String, String, String>? {
         return withContext(Dispatchers.IO) {
             try {
@@ -36,7 +37,6 @@ class ConexaoServidor(val contexto: Context) {
         }
     }
 
-    // Verifica se dados do usuário são iguais ao oficial do servidor
     suspend fun verificarDadosUsuario(cpf: String): JSONObject? {
         return withContext(Dispatchers.IO) {
             try {
@@ -53,7 +53,6 @@ class ConexaoServidor(val contexto: Context) {
         }
     }
 
-    // Envia registro de ponto - SEM DATA/HORA NO ENVIO
     suspend fun enviarPonto(registro: Map<String, Any>): Boolean {
         return withContext(Dispatchers.IO) {
             try {

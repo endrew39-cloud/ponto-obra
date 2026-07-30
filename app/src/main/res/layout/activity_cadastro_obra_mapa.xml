@@ -9,7 +9,6 @@
         android:layout_height="wrap_content"
         android:hint="Nome da Obra"
         android:padding="16dp">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/txtNomeObra"
             android:layout_width="match_parent"
@@ -22,7 +21,6 @@
         android:hint="Raio de verificação (metros)"
         android:paddingStart="16dp"
         android:paddingEnd="16dp">
-
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/txtRaioObra"
             android:layout_width="match_parent"

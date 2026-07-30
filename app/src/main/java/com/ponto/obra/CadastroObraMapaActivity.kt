@@ -35,7 +35,6 @@ class CadastroObraMapaActivity : AppCompatActivity(), OnMapReadyCallback {
         txtNomeObra = findViewById(R.id.txtNomeObra)
         txtRaioObra = findViewById(R.id.txtRaioObra)
         btnSalvarObraMapa = findViewById(R.id.btnSalvarObraMapa)
-
         btnSalvarObraMapa.setOnClickListener { salvarObra() }
     }
 
@@ -53,11 +52,11 @@ class CadastroObraMapaActivity : AppCompatActivity(), OnMapReadyCallback {
             )
             return
         }
-        mapa.isMyLocationEnabled = true
-        mapa.setOnMapClickListener { ponto ->
-            mapa.clear()
-            mapa.addMarker(MarkerOptions().position(ponto).title("Local da Obra"))
-            mapa.animateCamera(CameraUpdateFactory.newLatLngZoom(ponto, 15f))
+        mapaObra.isMyLocationEnabled = true
+        mapaObra.setOnMapClickListener { ponto ->
+            mapaObra.clear()
+            mapaObra.addMarker(MarkerOptions().position(ponto).title("Local da Obra"))
+            mapaObra.animateCamera(CameraUpdateFactory.newLatLngZoom(ponto, 15f))
             localEscolhido = ponto
         }
     }
@@ -65,19 +64,16 @@ class CadastroObraMapaActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun salvarObra() {
         val nome = txtNomeObra.text.toString().trim()
         val raio = txtRaioObra.text.toString().trim()
-
         if(nome.isEmpty() || raio.isEmpty() || localEscolhido == null) {
-            Toast.makeText(this, "Preencha todos os dados e escolha o local no mapa!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Preencha tudo e escolha o local no mapa!", Toast.LENGTH_LONG).show()
             return
         }
-
         val qtdAtual = config.pegarValor("qtd_obras", "0").toInt()
         config.salvarValor("obra_${qtdAtual}_nome", nome)
         config.salvarValor("obra_${qtdAtual}_lat", localEscolhido!!.latitude.toString())
         config.salvarValor("obra_${qtdAtual}_lon", localEscolhido!!.longitude.toString())
         config.salvarValor("obra_${qtdAtual}_raio", raio)
         config.salvarValor("qtd_obras", (qtdAtual + 1).toString())
-
         Toast.makeText(this, "✅ Obra cadastrada com sucesso!", Toast.LENGTH_LONG).show()
         finish()
     }

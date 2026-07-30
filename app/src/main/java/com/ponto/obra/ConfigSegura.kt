@@ -1,85 +1,86 @@
-package com.ponto.obra
-
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import android.util.Base64
+import org.json.JSONArray
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 
-class ConfigSegura(private val contexto: Context) {
+class ConfigSegura(contexto: Context) {
+    private val pasta: SharedPreferences = contexto.getSharedPreferences("dados_protegidos", Context.MODE_PRIVATE or Context.MODE_ENCRYPTED)
 
-    private val SENHA_MESTRA_PADRAO = "pontoobra2026"
-    private val preferencias: SharedPreferences
-
-    init {
-        val chaveMestra = MasterKey.Builder(contexto)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-
-        preferencias = EncryptedSharedPreferences.create(
-            contexto,
-            "configuracoes_seguras",
-            chaveMestra,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+    // Salvar e ler valores básicos
+    fun salvarValor(chave: String, valor: String) {
+        pasta.edit().putString(chave, valor).apply()
     }
 
-    fun validarAcessoDev(senhaDigitada: String): Boolean {
-        val senhaSalva = preferencias.getString("senha_mestra", SENHA_MESTRA_PADRAO)
-        return senhaDigitada.trim() == senhaSalva
+    fun pegarValor(chave: String, padrao: String = ""): String {
+        return pasta.getString(chave, padrao) ?: padrao
     }
 
-    fun salvarNomeEmpresa(nome: String) {
-        preferencias.edit().putString("nome_empresa", nome).apply()
+    // Foto de perfil - SALVA SOMENTE NO CELULAR
+    fun salvarFotoPerfil(cpf: String, fotoBase64: String) {
+        val chave = "foto_$cpf"
+        salvarValor(chave, fotoBase64)
     }
 
-    fun pegarNomeEmpresa(): String {
-        return preferencias.getString("nome_empresa", "Minha Obra") ?: "Minha Obra"
+    fun pegarFotoPerfil(cpf: String): String? {
+        val chave = "foto_$cpf"
+        return pegarValor(chave, null)
     }
 
-    fun salvarServidor(endereco: String) {
-        preferencias.edit().putString("endereco_servidor", endereco).apply()
-    }
+    // Atualizar lista de obras DIRETO DO SERVIDOR
+    suspend fun atualizarListaObrasDoServidor(): Boolean {
+        return try {
+            val endereco = pegarValor("link_servidor", "").trim().removeSuffix("/")
+            if(endereco.isEmpty()) return false
 
-    fun pegarServidor(): String {
-        return preferencias.getString("endereco_servidor", "") ?: ""
-    }
+            val url = URL("$endereco/lista-obras")
+            val conexao = url.openConnection() as HttpURLConnection
+            conexao.setRequestProperty("ngrok-skip-browser-warning", "pontoobra")
+            conexao.connectTimeout = 10000
+            conexao.readTimeout = 10000
 
-    fun salvarObra(obra: Obra) {
-        val lista = pegarTodasObras().toMutableList()
-        lista.add(obra)
-        val nomes = lista.joinToString(" | ") { it.nome }
-        val lats = lista.joinToString(" | ") { it.latitude.toString() }
-        val lons = lista.joinToString(" | ") { it.longitude.toString() }
-        val raios = lista.joinToString(" | ") { it.raioPermitidoMetros.toString() }
-        preferencias.edit()
-            .putString("lista_obras_nomes", nomes)
-            .putString("lista_obras_lat", lats)
-            .putString("lista_obras_lon", lons)
-            .putString("lista_obras_raios", raios)
-            .apply()
-    }
+            val resposta = conexao.inputStream.reader().readText()
+            val listaJson = JSONArray(resposta)
 
-    fun pegarTodasObras(): List<Obra> {
-        val nomes = preferencias.getString("lista_obras_nomes", "") ?: ""
-        val lats = preferencias.getString("lista_obras_lat", "") ?: ""
-        val lons = preferencias.getString("lista_obras_lon", "") ?: ""
-        val raios = preferencias.getString("lista_obras_raios", "") ?: ""
+            // Limpa lista antiga
+            val editor = pasta.edit()
+            val qtdAntiga = pegarValor("qtd_obras", "0").toInt()
+            for(i in 0 until qtdAntiga) {
+                editor.remove("obra_${i}_nome")
+                editor.remove("obra_${i}_lat")
+                editor.remove("obra_${i}_lon")
+                editor.remove("obra_${i}_raio")
+            }
 
-        if (nomes.isEmpty() || lats.isEmpty() || lons.isEmpty() || raios.isEmpty()) return emptyList()
-
-        val listaNomes = nomes.split(" | ").filter { it.isNotEmpty() }
-        val listaLats = lats.split(" | ").mapNotNull { it.toDoubleOrNull() }
-        val listaLons = lons.split(" | ").mapNotNull { it.toDoubleOrNull() }
-        val listaRaios = raios.split(" | ").mapNotNull { it.toIntOrNull() }
-
-        return listaNomes.zip(listaLats.zip(listaLons.zip(listaRaios))) { nome, dados ->
-            Obra(nome, dados.first, dados.second.first, dados.second.second)
+            // Salva lista nova
+            editor.putString("qtd_obras", listaJson.length().toString())
+            for(i in 0 until listaJson.length()){
+                val obj = listaJson.getJSONObject(i)
+                editor.putString("obra_${i}_nome", obj.getString("nome"))
+                editor.putString("obra_${i}_lat", obj.getString("lat"))
+                editor.putString("obra_${i}_lon", obj.getString("lon"))
+                editor.putString("obra_${i}_raio", obj.getString("raio"))
+            }
+            editor.apply()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 
-    fun pegarObraAtual(): Obra? {
-        val lista = pegarTodasObras()
-        return lista.firstOrNull()
+    fun carregarListaObras(): List<Triple<String, Double, Double, Int>> {
+        val lista = mutableListOf<Triple<String, Double, Double, Int>>()
+        val qtd = pegarValor("qtd_obras", "0").toInt()
+        for(i in 0 until qtd) {
+            val nome = pegarValor("obra_${i}_nome")
+            val lat = pegarValor("obra_${i}_lat", "0.0").toDouble()
+            val lon = pegarValor("obra_${i}_lon", "0.0").toDouble()
+            val raio = pegarValor("obra_${i}_raio", "0").toInt()
+            lista.add(Triple(nome, lat, lon, raio))
+        }
+        return lista
     }
 }

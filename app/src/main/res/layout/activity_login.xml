@@ -3,14 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
+    android:background="#F5F5F5"
     android:padding="32dp"
-    android:background="#F5F5F5">
+    android:gravity="center">
 
     <TextView
+        android:id="@+id/txtEmpresa"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="RDC DRYWALL"
+        android:text="Ponto Obra"
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="#2E7D32"
@@ -19,20 +20,23 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/cpf"
+        android:hint="CPF"
         android:layout_marginBottom="16dp">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edtCpf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"/>
+            android:inputType="number"
+            android:maxLength="11"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/senha"
+        android:hint="Senha"
         android:layout_marginBottom="24dp">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edtSenha"
             android:layout_width="match_parent"
@@ -44,7 +48,7 @@
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:text="@string/login"
+        android:text="Entrar"
         android:textSize="16sp"
         android:backgroundTint="#2E7D32"
         android:textColor="@android:color/white"
@@ -52,10 +56,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnBiometria"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/biometria"
-        android:backgroundTint="@android:color/transparent"
-        android:textColor="#FF6F00"/>
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Acessar com Digital/Rosto"
+        android:textSize="16sp"
+        android:backgroundTint="#1976D2"
+        android:textColor="@android:color/white"/>
 
 </LinearLayout>

@@ -4,11 +4,13 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +21,7 @@ class PrincipalActivity : AppCompatActivity() {
     private lateinit var btnEntrada: MaterialButton
     private lateinit var btnSaida: MaterialButton
     private lateinit var btnCadastrarObra: MaterialButton
-    private lateinit var listaObras: TextInputAutoCompleteTextView
+    private lateinit var listaObras: AutoCompleteTextView
     private val PERMISSAO_LOCAL = 202
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +58,7 @@ class PrincipalActivity : AppCompatActivity() {
     private suspend fun carregarObrasNaTela() {
         withContext(Dispatchers.Main) {
             val obras: List<String> = config.carregarListaObras().map { it.nome }
-            val adaptador = android.widget.ArrayAdapter<String>(
+            val adaptador = ArrayAdapter<String>(
                 this@PrincipalActivity,
                 android.R.layout.simple_dropdown_item_1line,
                 obras
